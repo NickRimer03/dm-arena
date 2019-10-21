@@ -1,0 +1,19 @@
+{
+  "name": "dm-arena",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "webpack"
+  },
+  "keywords": [],
+  "author": "Nick Rimer",
+  "license": "MIT",
+  "devDependencies": {
+    "webpack": "^4.35.2",
+    "webpack-cli": "^3.3.2"
+  },
+  "dependencies": {
+    "phaser": "^3.20.1"
+  }
+}
