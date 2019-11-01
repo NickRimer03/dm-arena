@@ -28,7 +28,11 @@ let cursors;
 
 function preload() {
   this.load.image("sky", "./res/img/sky.png");
-  this.load.atlas("vulture", "./res/spritesheets/vulture.png", "./res/spritesheets/vulture.json");
+  this.load.image("vulture", "./res/img/vulture.png");
+  this.load.spritesheet("engines", "./res/spritesheets/vulture-engines-animation.png", {
+    frameWidth: 58,
+    frameHeight: 58
+  });
 }
 
 function create() {
@@ -36,20 +40,40 @@ function create() {
 
   cursors = this.input.keyboard.createCursorKeys();
 
-  player = this.physics.add.image(100, 100, "vulture");
+  player = this.physics.add.sprite(width / 2, height / 2, "vulture");
   player.setDamping(true);
-  player.setDrag(0.975);
+  player.setDrag(0.985);
   player.setMaxVelocity(200);
+
+  this.anims.create({
+    key: "idle",
+    frames: [{ key: "vulture" }],
+    frameRate: 20
+  });
+  this.anims.create({
+    key: "engines-anim",
+    frames: this.anims.generateFrameNumbers("engines", { start: 0, end: 7 }),
+    frameRate: 7,
+    repeat: -1
+  });
+
+  this.cameras.main.startFollow(player);
 }
 
 function update() {
   if (cursors.up.isDown) {
-    if (cursors.left.isDown) {
-      player.angle -= 2;
-    } else if (cursors.right.isDown) {
-      player.angle += 2;
-    }
+    this.physics.velocityFromRotation(player.rotation, 200, player.body.acceleration);
+    player.anims.play("engines-anim", true);
+  } else {
+    player.setAcceleration(0);
+    player.anims.play("idle", true);
+  }
 
-    this.physics.velocityFromRotation(player.rotation, 200, player.body.velocity);
+  if (cursors.left.isDown) {
+    player.setAngularVelocity(-150);
+  } else if (cursors.right.isDown) {
+    player.setAngularVelocity(150);
+  } else {
+    player.setAngularVelocity(0);
   }
 }
