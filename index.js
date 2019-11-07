@@ -1,7 +1,18 @@
-import Phaser from "phaser";
+import { AUTO, Game, Input } from "phaser";
+import Bullet from "./src/bullet";
 
-const { AUTO, Game } = Phaser;
 const [width, height] = [800, 600];
+const ships = {
+  vulture: {
+    damping: 0.985,
+    speed: {
+      linear: 400,
+      angular: 320
+    },
+    fireRate: 200,
+    lastFired: 0
+  }
+};
 
 const config = {
   type: AUTO,
@@ -12,7 +23,7 @@ const config = {
     arcade: {
       fps: 60,
       gravity: { y: 0 },
-      debug: true
+      debug: false
     }
   },
   scene: {
@@ -23,12 +34,13 @@ const config = {
 };
 
 const game = new Game(config);
-let player;
-let cursors;
+let bullets, vulture;
+let cursors, fire;
 
 function preload() {
   this.load.image("sky", "./res/img/sky.png");
   this.load.image("vulture", "./res/img/vulture.png");
+  this.load.image("blaster", "./res/img/blaster.png");
   this.load.spritesheet("engines", "./res/spritesheets/vulture-engines-animation.png", {
     frameWidth: 58,
     frameHeight: 58
@@ -39,11 +51,19 @@ function create() {
   this.add.image(width / 2, height / 2, "sky");
 
   cursors = this.input.keyboard.createCursorKeys();
+  fire = this.input.keyboard.addKey(Input.Keyboard.KeyCodes.SPACE);
 
-  player = this.physics.add.sprite(width / 2, height / 2, "vulture");
-  player.setDamping(true);
-  player.setDrag(0.985);
-  player.setMaxVelocity(200);
+  bullets = this.physics.add.group({
+    classType: Bullet,
+    maxSize: 30,
+    runChildUpdate: true
+  });
+
+  vulture = this.physics.add.sprite(width / 2, height / 2, "vulture");
+  vulture.body.useDamping = true;
+  vulture.body.setDrag(ships.vulture.damping, 0.99);
+  vulture.body.setMaxSpeed(ships.vulture.speed.linear);
+  vulture.body.setAngularDrag(0.95);
 
   this.anims.create({
     key: "idle",
@@ -57,23 +77,32 @@ function create() {
     repeat: -1
   });
 
-  this.cameras.main.startFollow(player);
+  this.cameras.main.startFollow(vulture);
 }
 
-function update() {
+function update(time) {
   if (cursors.up.isDown) {
-    this.physics.velocityFromRotation(player.rotation, 200, player.body.acceleration);
-    player.anims.play("engines-anim", true);
+    this.physics.velocityFromRotation(vulture.rotation, ships.vulture.speed.linear, vulture.body.acceleration);
+    vulture.anims.play("engines-anim", true);
   } else {
-    player.setAcceleration(0);
-    player.anims.play("idle", true);
+    vulture.setAcceleration(0);
+    vulture.anims.play("idle", true);
   }
 
   if (cursors.left.isDown) {
-    player.setAngularVelocity(-150);
+    vulture.setAngularVelocity(-ships.vulture.speed.angular);
   } else if (cursors.right.isDown) {
-    player.setAngularVelocity(150);
+    vulture.setAngularVelocity(ships.vulture.speed.angular);
   } else {
-    player.setAngularVelocity(0);
+    vulture.setAngularVelocity(0);
+  }
+
+  if (fire.isDown && time > ships.vulture.lastFired) {
+    const bullet = bullets.get();
+
+    if (bullet) {
+      bullet.fire(vulture);
+      ships.vulture.lastFired = time + ships.vulture.fireRate;
+    }
   }
 }
