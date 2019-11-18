@@ -40,7 +40,8 @@ let cursors, fire;
 function preload() {
   this.load.image("sky", "./res/img/sky.png");
   this.load.image("vulture", "./res/img/vulture.png");
-  this.load.image("blaster", "./res/img/blaster.png");
+  // this.load.image("blaster", "./res/img/blaster.png");
+  this.load.image("blaster", "./res/img/blaster_small.png");
   this.load.spritesheet("engines", "./res/spritesheets/vulture-engines-animation.png", {
     frameWidth: 58,
     frameHeight: 58

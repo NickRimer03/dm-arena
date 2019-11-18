@@ -1,4 +1,4 @@
-import { Class, Physics, Math } from "phaser";
+import { Class, Physics, Math as PMath, Geom } from "phaser";
 
 export default Class({
   Extends: Physics.Arcade.Image,
@@ -11,39 +11,27 @@ export default Class({
 
     this.speed = 1000;
     this.lifespan = 1000;
-
-    this._temp = new Math.Vector2();
   },
 
   fire: function(ship) {
     this.lifespan = 1000;
 
+    const a = PMath.DegToRad(ship.body.rotation);
+    const { x: x0, y: y0 } = ship;
+    const [x, y] = [x0 + ship.width / 2, y0];
+    const [X, Y] = [
+      x0 + (x - x0) * Math.cos(a) - (y - y0) * Math.sin(a),
+      y0 + (y - y0) * Math.cos(a) + (x - x0) * Math.sin(a)
+    ];
+    const startPoint = new Geom.Point(X, Y);
+
     this.setActive(true);
     this.setVisible(true);
-    // this.setRotation(ship.rotation);
     this.setAngle(ship.body.rotation);
-    this.setPosition(ship.x, ship.y);
-    this.body.reset(ship.x, ship.y);
+    this.setPosition(startPoint.x, startPoint.y);
+    this.body.reset(startPoint.x, startPoint.y);
 
-    // ship.body.advancePosition(10, this._temp);
-
-    // this.setPosition(this._temp.x, this._temp.y);
-    // this.body.reset(this._temp.x, this._temp.y);
-
-    //  if ship is rotating we need to add it here
-    // var a = ship.body.angularVelocity;
-
-    // if (ship.body.speed !== 0)
-    // {
-    //     var angle = Math.atan2(ship.body.velocity.y, ship.body.velocity.x);
-    // }
-    // else
-    // {
-    const angle = Math.DegToRad(ship.body.rotation);
-    // }
-
-    // this.body.world.velocityFromRotation(angle, this.speed + ship.body.speed, this.body.velocity);
-    this.scene.physics.velocityFromRotation(angle, this.speed, this.body.velocity);
+    this.scene.physics.velocityFromRotation(a, this.speed, this.body.velocity);
 
     this.body.velocity.x *= 2;
     this.body.velocity.y *= 2;
